@@ -200,31 +200,89 @@ class SonyAudioDevice:
         params = [{"output": zone, "mute": mute_str}]
         await self._call("audio", "setAudioMute", params, "1.1")
 
-    async def get_sound_settings(self, target: str = "") -> list[dict[str, Any]]:
+    async def get_sound_settings(self, target: str = "", output: str = "") -> list[dict[str, Any]]:
         """
         Get current sound settings.
 
+        NOTE: TA-AN1000 requires target="" (empty string) to work correctly.
+
         Args:
-            target: Target identifier (default "" for all)
+            target: Target identifier (default "" for all - required for TA-AN1000)
+            output: Output zone identifier (default "" for main zone)
 
         Returns:
-            List of sound settings
+            List of sound settings including:
+            - 360SSM (360 Spatial Sound Mapping)
+            - dsdNative (DSD Native)
+            - pureDirect (Pure Direct)
+            - calibrationType (Full Flat, Engineer, Front Reference, Off)
+            - sceneSelection (Movie, Music, Undo)
+            - soundField (8 sound field modes)
+            - dimmer (Bright, Dark, Off)
+            - hdmiOutput (HDMI A, A+B, B, Off)
         """
-        result = await self._call("audio", "getSoundSettings", [{"target": target}], "1.1")
+        params = [{"target": target}]
+        if output:
+            params[0]["output"] = output
+        result = await self._call("audio", "getSoundSettings", params, "1.1")
         return result["result"][0]
+
+    async def set_sound_setting(self, target: str, value: str, output: str = "") -> None:
+        """
+        Set a specific sound setting.
+
+        Args:
+            target: Setting to change (e.g., "soundField", "360SSM", "pureDirect")
+            value: New value for the setting
+            output: Output zone identifier (default "" for main zone)
+
+        Examples:
+            - set_sound_setting("soundField", "2chStereo")
+            - set_sound_setting("360SSM", "on")
+            - set_sound_setting("pureDirect", "on")
+            - set_sound_setting("calibrationType", "fullFlat")
+        """
+        params = [{"settings": [{"target": target, "value": value}]}]
+        if output:
+            params[0]["output"] = output
+        await self._call("audio", "setSoundSettings", params, "1.1")
 
     async def get_speaker_settings(self, target: str = "") -> list[dict[str, Any]]:
         """
         Get speaker configuration settings.
 
+        NOTE: TA-AN1000 requires target="" (empty string) to work correctly.
+
         Args:
-            target: Target identifier (default "" for all)
+            target: Target identifier (default "" for all - required for TA-AN1000)
 
         Returns:
-            List of speaker settings
+            List of speaker settings including individual speaker levels:
+            - Front L/R Level
+            - Center Level
+            - Height L/R Level
+            - Surround L/R Level
+            - Subwoofer Level
+            - Speaker Selection
         """
         result = await self._call("audio", "getSpeakerSettings", [{"target": target}], "1.0")
         return result["result"][0]
+
+    async def set_speaker_level(self, target: str, value: float) -> None:
+        """
+        Set individual speaker level.
+
+        Args:
+            target: Speaker to adjust (e.g., "subwooferLevel", "centerLevel")
+            value: Level in dB (-10.0 to +10.0, step 0.5)
+
+        Examples:
+            - set_speaker_level("subwooferLevel", 2.0)
+            - set_speaker_level("centerLevel", -1.5)
+            - set_speaker_level("surroundLLevel", -0.5)
+        """
+        params = [{"settings": [{"target": target, "value": str(value)}]}]
+        await self._call("audio", "setSpeakerSettings", params, "1.0")
 
     async def get_equalizer_settings(self, target: str = "") -> list[dict[str, Any]]:
         """
@@ -291,6 +349,76 @@ class SonyAudioDevice:
         """
         params = [{"output": zone, "uri": uri}]
         await self._call("avContent", "setPlayContent", params, "1.2")
+
+    async def get_external_terminals_status(self, output: str = "") -> list[dict[str, Any]]:
+        """
+        Get external terminal status including labeled inputs.
+
+        Args:
+            output: Output zone identifier (default "" for all)
+
+        Returns:
+            List of terminal status dictionaries
+        """
+        result = await self._call(
+            "avContent",
+            "getCurrentExternalTerminalsStatus",
+            [{"output": output}],
+            "1.2"
+        )
+        return result["result"][0]
+
+    async def set_active_terminal(self, uri: str, active: bool) -> None:
+        """
+        Activate or deactivate a zone or output.
+
+        Args:
+            uri: Zone URI (e.g., "extOutput:zone?zone=2")
+            active: True to activate, False to deactivate
+
+        Examples:
+            - set_active_terminal("extOutput:zone?zone=2", True)  # Activate Zone 2
+            - set_active_terminal("extOutput:zone?zone=3", False) # Deactivate Zone 3
+        """
+        status = "active" if active else "inactive"
+        params = [{"active": status, "uri": uri}]
+        await self._call("avContent", "setActiveTerminal", params, "1.0")
+
+    async def get_zone_volume(self, zone: int) -> dict[str, Any]:
+        """
+        Get volume information for a specific zone.
+
+        Args:
+            zone: Zone number (1=Main, 2=Zone 2, 3=Zone 3)
+
+        Returns:
+            Volume info dict with volume, mute, min/max
+        """
+        zone_uri = f"extOutput:zone?zone={zone}"
+        result = await self.get_volume_info(zone_uri)
+        return result[0] if result else {}
+
+    async def set_zone_volume(self, zone: int, volume: int | str) -> None:
+        """
+        Set volume for a specific zone.
+
+        Args:
+            zone: Zone number (1=Main, 2=Zone 2, 3=Zone 3)
+            volume: Absolute level (0-74) or relative ("+1", "-2")
+        """
+        zone_uri = f"extOutput:zone?zone={zone}"
+        await self.set_volume(volume, zone_uri)
+
+    async def set_zone_mute(self, zone: int, mute: bool) -> None:
+        """
+        Set mute status for a specific zone.
+
+        Args:
+            zone: Zone number (1=Main, 2=Zone 2, 3=Zone 3)
+            mute: True for mute on, False for mute off
+        """
+        zone_uri = f"extOutput:zone?zone={zone}"
+        await self.set_mute(mute, zone_uri)
 
 
 class SonyApiError(Exception):
