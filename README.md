@@ -162,6 +162,7 @@ Once configured, you can:
 | Home | TV Input |
 | Back | HDMI 1 |
 
+
 ### Custom UI Pages
 
 The integration provides two touchscreen pages:
