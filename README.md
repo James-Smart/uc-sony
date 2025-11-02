@@ -120,6 +120,36 @@ python3 src/driver.py
    - Find "Sony Audio Control" in the list
    - Follow the setup wizard
 
+### Option 3: Build Locally (Testing)
+
+For testing builds before releasing:
+
+**Requirements:**
+- Docker installed
+- `jq` (for version extraction)
+
+**Build Steps:**
+
+1. **Build the binary**
+```bash
+./build.sh
+```
+
+This creates a binary in `dist/driver/` using the same Docker environment as GitHub Actions.
+
+2. **Package for upload**
+```bash
+./package.sh
+```
+
+This creates a `.tar.gz` file ready to upload to your Remote via:
+- Configuration → Integrations → Add Integration → Upload
+
+**Build files:**
+- `driver.spec` - PyInstaller configuration
+- `build.sh` - Local build script
+- `package.sh` - Creates distribution package
+
 ### Setup Options
 
 #### Auto-Discovery

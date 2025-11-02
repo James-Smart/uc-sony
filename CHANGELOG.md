@@ -8,6 +8,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- PyInstaller spec file for proper module inclusion
+- Local build script (`build.sh`) for testing
+- Local packaging script (`package.sh`) for distribution
+- `.gitignore` for build artifacts
+- Documentation for local building
+
+### Fixed
+- PyInstaller not including all modules from `src/` directory
+- Missing `permissions: contents: write` in GitHub Actions workflow
+
+### Changed
+- GitHub Actions now uses `driver.spec` instead of command-line PyInstaller args
+
+## [0.1.0] - 2025-11-02
+
+### Added
 - Initial release of Sony Audio Control integration
 - Auto-discovery via SSDP/UPnP for Sony Audio Control API devices
 - Manual IP configuration as fallback
