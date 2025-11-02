@@ -1,0 +1,75 @@
+{
+  "driver_id": "sony_audio",
+  "version": "0.1.0",
+  "min_core_api": "0.20.0",
+  "name": {
+    "en": "Sony Audio Control",
+    "de": "Sony Audio Steuerung"
+  },
+  "icon": "uc:speaker",
+  "description": {
+    "en": "Integration for Sony Audio Control API compatible devices (soundbars, receivers, speakers)",
+    "de": "Integration für Sony Audio Control API kompatible Geräte (Soundbars, Receiver, Lautsprecher)"
+  },
+  "port": 9095,
+  "developer": {
+    "name": "James Smart",
+    "url": "https://github.com/James-Smart/uc-sony"
+  },
+  "home_page": "https://github.com/James-Smart/uc-sony",
+  "release_date": "2025-11-01",
+  "setup_data_schema": {
+    "title": {
+      "en": "Sony Audio Setup",
+      "de": "Sony Audio Einrichtung"
+    },
+    "settings": [
+      {
+        "id": "discovery_mode",
+        "label": {
+          "en": "Discovery Method",
+          "de": "Erkennungsmethode"
+        },
+        "field": {
+          "dropdown": {
+            "value": "auto",
+            "items": [
+              {
+                "id": "auto",
+                "label": {
+                  "en": "Auto-discover devices",
+                  "de": "Geräte automatisch erkennen"
+                }
+              },
+              {
+                "id": "manual",
+                "label": {
+                  "en": "Manual IP address",
+                  "de": "Manuelle IP-Adresse"
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "manual_ip",
+        "label": {
+          "en": "IP Address",
+          "de": "IP-Adresse"
+        },
+        "field": {
+          "text": {
+            "value": ""
+          }
+        },
+        "required": false,
+        "visible": {
+          "field": "discovery_mode",
+          "value": "manual"
+        }
+      }
+    ]
+  }
+}
+
