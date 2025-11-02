@@ -158,4 +158,3 @@ def get_all_devices() -> dict[str, dict[str, Any]]:
     """
     config = load_config()
     return config.get("devices", {})
-

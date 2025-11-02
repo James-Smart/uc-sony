@@ -53,7 +53,7 @@ async def discover_sony_devices(timeout: int = 5) -> list[dict[str, Any]]:
         # Search for each service type
         for service_type in SSDP_SERVICE_TYPES:
             _LOG.debug("Searching for service type: %s", service_type)
-            
+
             # Create M-SEARCH message for this service type
             msearch_msg = (
                 "M-SEARCH * HTTP/1.1\r\n"
@@ -97,11 +97,11 @@ async def discover_sony_devices(timeout: int = 5) -> list[dict[str, Any]]:
                         # Check if this is a Sony device and we haven't seen it yet
                         # Accept if it matches our service type OR if it's clearly a Sony device
                         is_sony = (
-                            (st and st in SSDP_SERVICE_TYPES) or
-                            (server and "sony" in server.lower()) or
-                            (location and "sony" in location.lower())
+                            (st and st in SSDP_SERVICE_TYPES)
+                            or (server and "sony" in server.lower())
+                            or (location and "sony" in location.lower())
                         )
-                        
+
                         if location and is_sony and location not in found_locations:
                             found_locations.add(location)
                             _LOG.info("Found potential Sony device at %s (from %s)", location, addr[0])
@@ -162,9 +162,7 @@ async def _fetch_device_info(location: str, known_ip: str | None = None) -> dict
         manufacturer = device.findtext("manufacturer", "", namespaces)
 
         # Check if this is actually a Sony device
-        is_sony_device = (
-            manufacturer and "sony" in manufacturer.lower()
-        ) or (
+        is_sony_device = (manufacturer and "sony" in manufacturer.lower()) or (
             model_name and any(sony_model in model_name.upper() for sony_model in ["TA-", "STR-", "HT-", "SRS-"])
         )
 
@@ -174,7 +172,7 @@ async def _fetch_device_info(location: str, known_ip: str | None = None) -> dict
 
         # Extract Sony-specific API base URL
         base_url = None
-        
+
         # First try X_ScalarWebAPI_DeviceInfo (TA-AN1000 and newer devices)
         device_info = device.find(".//av:X_ScalarWebAPI_DeviceInfo", namespaces)
         if device_info is not None:
@@ -182,7 +180,7 @@ async def _fetch_device_info(location: str, known_ip: str | None = None) -> dict
             if base_url_elem is not None and base_url_elem.text:
                 base_url = base_url_elem.text
                 _LOG.debug("Found base URL in X_ScalarWebAPI_DeviceInfo: %s", base_url)
-        
+
         # Fallback: try old X_ScalarWebAPI_ServiceList format (older receivers)
         if not base_url:
             service_list = device.find(".//av:X_ScalarWebAPI_ServiceList", namespaces)
@@ -199,13 +197,14 @@ async def _fetch_device_info(location: str, known_ip: str | None = None) -> dict
         if not base_url and known_ip:
             _LOG.info("No API URL in descriptor, using default for Sony device at %s", known_ip)
             base_url = f"http://{known_ip}:10000/sony"
-        
+
         if not base_url:
             _LOG.warning("Could not determine API base URL for device")
             return None
 
         # Extract IP from base URL
         import re
+
         ip_match = re.search(r"//([^:]+)", base_url)
         ip_address = ip_match.group(1) if ip_match else None
 
@@ -273,4 +272,3 @@ async def verify_device(ip_address: str) -> dict[str, Any] | None:
     except Exception as e:
         _LOG.error("Failed to verify device at %s: %s", ip_address, e)
         return None
-

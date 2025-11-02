@@ -9,14 +9,7 @@ from typing import Any
 
 import ucapi
 from ucapi import remote
-from ucapi.ui import (
-    Buttons,
-    Size,
-    UiPage,
-    create_btn_mapping,
-    create_ui_icon,
-    create_ui_text,
-)
+from ucapi.ui import Buttons, Size, UiPage, create_btn_mapping, create_ui_icon, create_ui_text
 
 from sony_client import SonyAudioDevice
 
@@ -77,7 +70,7 @@ def create_simple_commands(sources: list[dict[str, Any]]) -> list[str]:
 def create_button_mappings(sources: list[dict[str, Any]]) -> list[Any]:
     """
     Create button mappings for physical remote buttons.
-    
+
     Maps physical buttons to Sony soundbar commands with sensible defaults:
     - Power button → Power toggle
     - Volume buttons → Volume up/down
@@ -96,13 +89,12 @@ def create_button_mappings(sources: list[dict[str, Any]]) -> list[Any]:
     mappings = [
         # === Power Control ===
         create_btn_mapping(Buttons.POWER, "POWER_TOGGLE"),
-        
         # === Volume Controls ===
         create_btn_mapping(Buttons.VOLUME_UP, "VOLUME_UP"),
         create_btn_mapping(Buttons.VOLUME_DOWN, "VOLUME_DOWN"),
         create_btn_mapping(Buttons.MUTE, "MUTE_TOGGLE"),
     ]
-    
+
     # === Input Selection with Channel Buttons ===
     # Channel up/down to cycle through inputs
     # Get input commands in order
@@ -120,45 +112,45 @@ def create_button_mappings(sources: list[dict[str, Any]]) -> list[Any]:
             input_commands.append("INPUT_ANALOG")
         elif "airPlay" in source_uri:
             input_commands.append("INPUT_AIRPLAY")
-    
+
     # Map channel buttons to cycle through inputs if we have multiple
     if len(input_commands) >= 2:
         # Channel up → next input (e.g., TV → HDMI1 → HDMI2 → BT)
         mappings.append(create_btn_mapping(Buttons.CHANNEL_UP, input_commands[1]))
         # Channel down → previous input (or first input)
         mappings.append(create_btn_mapping(Buttons.CHANNEL_DOWN, input_commands[0]))
-    
+
     # === Quick Access Buttons ===
     # Home button → TV input (most common usage)
     if "INPUT_TV" in input_commands:
         mappings.append(create_btn_mapping(Buttons.HOME, "INPUT_TV"))
-    
+
     # Back button → HDMI 1 (second most common)
     if "INPUT_HDMI1" in input_commands:
         mappings.append(create_btn_mapping(Buttons.BACK, "INPUT_HDMI1"))
-    
+
     # === Dpad Navigation for Inputs ===
     # Use dpad for quick input selection
     if len(input_commands) >= 1:
         # Dpad Up → TV
         if "INPUT_TV" in input_commands:
             mappings.append(create_btn_mapping(Buttons.DPAD_UP, "INPUT_TV"))
-        
+
         # Dpad Left → HDMI 1
         if "INPUT_HDMI1" in input_commands:
             mappings.append(create_btn_mapping(Buttons.DPAD_LEFT, "INPUT_HDMI1"))
-        
+
         # Dpad Right → HDMI 2
         if "INPUT_HDMI2" in input_commands:
             mappings.append(create_btn_mapping(Buttons.DPAD_RIGHT, "INPUT_HDMI2"))
-        
+
         # Dpad Down → Bluetooth
         if "INPUT_BLUETOOTH" in input_commands:
             mappings.append(create_btn_mapping(Buttons.DPAD_DOWN, "INPUT_BLUETOOTH"))
-        
+
         # Dpad Center → Toggle mute (easy thumb access)
         mappings.append(create_btn_mapping(Buttons.DPAD_MIDDLE, "MUTE_TOGGLE"))
-    
+
     return mappings
 
 
@@ -249,9 +241,7 @@ def create_ui_pages(sources: list[dict[str, Any]], device_name: str) -> list[UiP
     return pages
 
 
-async def create_remote_entity(
-    device: SonyAudioDevice, entity_id: str, cmd_handler
-) -> ucapi.Remote:
+async def create_remote_entity(device: SonyAudioDevice, entity_id: str, cmd_handler) -> ucapi.Remote:
     """
     Create a remote entity for a Sony Audio device.
 
@@ -332,4 +322,3 @@ def get_input_uri_from_command(command: str, sources: list[dict[str, Any]]) -> s
             return source_uri
 
     return None
-

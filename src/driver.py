@@ -7,7 +7,6 @@ Main integration driver that handles device discovery, setup, and control.
 
 import asyncio
 import logging
-import os
 import sys
 from pathlib import Path
 from typing import Any
@@ -20,7 +19,7 @@ if str(src_dir) not in sys.path:
 import ucapi
 from ucapi import remote
 
-from config import get_device_config, save_device_config
+from config import save_device_config
 from discovery import discover_sony_devices, verify_device
 from remote_entity import create_remote_entity, get_input_uri_from_command
 from sony_client import SonyApiError, SonyAudioDevice
@@ -117,9 +116,7 @@ async def handle_driver_setup(msg: ucapi.DriverSetupRequest) -> ucapi.SetupActio
                     {
                         "id": "retry",
                         "label": {"en": "Try again?"},
-                        "field": {
-                            "checkbox": {"value": False}
-                        },
+                        "field": {"checkbox": {"value": False}},
                     },
                 ],
             )
@@ -266,9 +263,7 @@ async def handle_user_data_response(msg: ucapi.UserDataResponse) -> ucapi.SetupA
     return ucapi.SetupError()
 
 
-async def cmd_handler(
-    entity: ucapi.Remote, cmd_id: str, params: dict[str, Any] | None
-) -> ucapi.StatusCodes:
+async def cmd_handler(entity: ucapi.Remote, cmd_id: str, params: dict[str, Any] | None) -> ucapi.StatusCodes:
     """
     Handle remote entity commands.
 
@@ -291,16 +286,12 @@ async def cmd_handler(
         # Handle power commands
         if cmd_id == remote.Commands.ON:
             await device.set_power_status("active")
-            api.configured_entities.update_attributes(
-                entity.id, {remote.Attributes.STATE: remote.States.ON}
-            )
+            api.configured_entities.update_attributes(entity.id, {remote.Attributes.STATE: remote.States.ON})
             return ucapi.StatusCodes.OK
 
         elif cmd_id == remote.Commands.OFF:
             await device.set_power_status("standby")
-            api.configured_entities.update_attributes(
-                entity.id, {remote.Attributes.STATE: remote.States.OFF}
-            )
+            api.configured_entities.update_attributes(entity.id, {remote.Attributes.STATE: remote.States.OFF})
             return ucapi.StatusCodes.OK
 
         elif cmd_id == remote.Commands.TOGGLE:
@@ -313,9 +304,7 @@ async def cmd_handler(
                 await device.set_power_status("standby")
                 new_state = remote.States.OFF
 
-            api.configured_entities.update_attributes(
-                entity.id, {remote.Attributes.STATE: new_state}
-            )
+            api.configured_entities.update_attributes(entity.id, {remote.Attributes.STATE: new_state})
             return ucapi.StatusCodes.OK
 
         elif cmd_id == remote.Commands.SEND_CMD:
@@ -329,15 +318,11 @@ async def cmd_handler(
             # Handle different command types
             if command == "POWER_ON":
                 await device.set_power_status("active")
-                api.configured_entities.update_attributes(
-                    entity.id, {remote.Attributes.STATE: remote.States.ON}
-                )
+                api.configured_entities.update_attributes(entity.id, {remote.Attributes.STATE: remote.States.ON})
 
             elif command == "POWER_OFF":
                 await device.set_power_status("standby")
-                api.configured_entities.update_attributes(
-                    entity.id, {remote.Attributes.STATE: remote.States.OFF}
-                )
+                api.configured_entities.update_attributes(entity.id, {remote.Attributes.STATE: remote.States.OFF})
 
             elif command == "POWER_TOGGLE":
                 current_state = entity.attributes.get(remote.Attributes.STATE)
@@ -347,9 +332,7 @@ async def cmd_handler(
                 else:
                     await device.set_power_status("standby")
                     new_state = remote.States.OFF
-                api.configured_entities.update_attributes(
-                    entity.id, {remote.Attributes.STATE: new_state}
-                )
+                api.configured_entities.update_attributes(entity.id, {remote.Attributes.STATE: new_state})
 
             elif command == "VOLUME_UP":
                 repeat = params.get("repeat", 1)
@@ -444,9 +427,7 @@ async def on_subscribe_entities(entity_ids: list[str]) -> None:
             try:
                 status = await device.get_power_status()
                 state = remote.States.ON if status == "active" else remote.States.OFF
-                api.configured_entities.update_attributes(
-                    entity_id, {remote.Attributes.STATE: state}
-                )
+                api.configured_entities.update_attributes(entity_id, {remote.Attributes.STATE: state})
             except Exception as e:
                 _LOG.error("Error updating entity %s state: %s", entity_id, e)
 
@@ -514,4 +495,3 @@ if __name__ == "__main__":
                 loop.run_until_complete(device.close())
             except Exception:
                 pass
-

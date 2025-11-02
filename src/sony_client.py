@@ -4,7 +4,6 @@ Sony Audio Control API Client.
 Async wrapper for Sony Audio Control API supporting TA-AN1000 and similar devices.
 """
 
-import asyncio
 import logging
 from typing import Any
 
@@ -78,9 +77,7 @@ class SonyAudioDevice:
 
         session = await self._ensure_session()
         try:
-            async with session.post(
-                url, json=payload, timeout=aiohttp.ClientTimeout(total=timeout)
-            ) as response:
+            async with session.post(url, json=payload, timeout=aiohttp.ClientTimeout(total=timeout)) as response:
                 response.raise_for_status()
                 # Sony devices sometimes don't set correct content-type, force JSON parsing
                 data = await response.json(content_type=None)
@@ -239,9 +236,7 @@ class SonyAudioDevice:
         Returns:
             List of equalizer settings
         """
-        result = await self._call(
-            "audio", "getCustomEqualizerSettings", [{"target": target}], "1.0"
-        )
+        result = await self._call("audio", "getCustomEqualizerSettings", [{"target": target}], "1.0")
         return result["result"][0]
 
     # AV Content Service Methods
@@ -314,4 +309,3 @@ class SonyApiError(Exception):
         self.message = message
         self.method = method
         super().__init__(f"Sony API error {code} in {method}: {message}")
-
