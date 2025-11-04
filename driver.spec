@@ -11,14 +11,22 @@ hiddenimports = [
     'config',
     'discovery',
     'remote_entity',
+    'settings_cache',
     'sony_client',
 ]
 
 a = Analysis(
-    ['src/driver.py'],
-    pathex=[],
+    [
+        'src/driver.py',
+        'src/config.py',
+        'src/discovery.py',
+        'src/remote_entity.py',
+        'src/settings_cache.py',
+        'src/sony_client.py',
+    ],
+    pathex=['src'],  # Add src to Python path so modules can be found
     binaries=[],
-    datas=[],
+    datas=[('driver.json', '.')],
     hiddenimports=hiddenimports,
     hookspath=[],
     hooksconfig={},
